@@ -17,11 +17,12 @@ export default function RootLayout() {
     "JetBrainsMono-Medium": require("../assets/fonts/JetBrainsMono-Medium.ttf"),
   });
 
+  // Prevent splash auto-hide
   useEffect(() => {
     SplashScreen.preventAutoHideAsync();
   }, []);
 
-  // Wait for fonts and auth to load
+  // Prepare app: check auth + load fonts
   useEffect(() => {
     const prepareApp = async () => {
       await checkAuth();
@@ -33,9 +34,10 @@ export default function RootLayout() {
     prepareApp();
   }, [fontsLoaded]);
 
+  // Wait until app is ready
   if (!appReady) return null;
 
-  // Render auth flow if not signed in, else main tabs
+  // Simply render the Slot, navigation will happen via folders
   return (
     <SafeAreaProvider>
       <SafeScreen>
