@@ -3,7 +3,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import SafeScreen from "../components/SafeScreen";
 import { StatusBar } from "expo-status-bar";
 import { useFonts } from "expo-font";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter, useSegments, Slot } from "expo-router";
 
 import { useAuthStore } from "../store/authStore";
@@ -19,18 +19,25 @@ export default function RootLayout() {
     "JetBrainsMono-Medium": require("../assets/fonts/JetBrainsMono-Medium.ttf"),
   });
 
-  // Hide splash screen when fonts are loaded
+  // New: only navigate after mount
+  const [isReady, setIsReady] = useState(false);
+
   useEffect(() => {
     if (fontsLoaded) SplashScreen.hideAsync();
   }, [fontsLoaded]);
 
-  // Check authentication on mount
   useEffect(() => {
     checkAuth();
   }, []);
 
-  // Handle navigation based on auth state
   useEffect(() => {
+    setIsReady(true); // now layout is mounted
+  }, []);
+
+  // Handle auth-based navigation only after layout mount
+  useEffect(() => {
+    if (!isReady) return;
+
     const inAuthScreen = segments[0] === "(auth)";
     const isSignedIn = user && token;
 
@@ -39,12 +46,11 @@ export default function RootLayout() {
     } else if (isSignedIn && inAuthScreen) {
       router.replace("/(tabs)");
     }
-  }, [user, token, segments]);
+  }, [isReady, user, token, segments]);
 
   return (
     <SafeAreaProvider>
       <SafeScreen>
-        {/* The Slot renders nested routes dynamically */}
         <Slot />
       </SafeScreen>
       <StatusBar style="dark" />
